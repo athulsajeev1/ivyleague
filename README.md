@@ -53,14 +53,3 @@ A live-updating feed where "Ivy Scholars" share their achievements. Features inc
 - Real-time UI notifications
 
 ---
-
-## ❓ FAQ
-
-### Q: How does the CV upload help me?
-When you upload your CV, the AI extracts your **Skills**. These skills are then cross-referenced with the descriptions of every fellowship and internship in the database. Your **Match Score** increases if your CV skills align with the requirements of the opportunity.
-
-### Q: Why is my Match Score 0%?
-Try clicking **Sync Intel** or ensure your Profile corresponds to the domains (AI, Law, Biomedical, etc.) covered by the opportunities.
-
-### Q: Where is the data stored?
-All data (Users, Posts, Opportunities) is stored in a local `sql_app.db` (SQLite) file for easy portability.
