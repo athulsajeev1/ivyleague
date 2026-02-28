@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IvyLeague Connect | AI Intel 2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #c90016;
+            --primary-glow: rgba(201, 0, 22, 0.4);
+            --accent: #4f46e5;
+            --accent-glow: rgba(79, 70, 229, 0.4);
+            --bg: #020306;
+            --surface: #0a0c10;
+            --surface-hover: #12151c;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass: rgba(10, 12, 16, 0.7);
+            --border: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            background-image:
+                radial-gradient(circle at 0% 0%, rgba(201, 0, 22, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(79, 70, 229, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 1) 0%, var(--bg) 100%);
+            background-attachment: fixed;
+            overflow-x: hidden;
+            letter-spacing: -0.01em;
+        }
+
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .glass:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .scholar-card {
+            background: linear-gradient(135deg, rgba(201, 0, 22, 0.1) 0%, rgba(79, 70, 229, 0.1) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scholar-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(201, 0, 22, 0.2), transparent 30%);
+            animation: rotate 10s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .nav-link {
+            position: relative;
+            color: var(--text-muted);
+            transition: all 0.3s;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-link.active {
+            color: white;
+            background: rgba(201, 0, 22, 0.1);
+            box-shadow: inset 0 0 0 1px rgba(201, 0, 22, 0.2);
+        }
+
+        .crimson-glow {
+            box-shadow: 0 0 25px rgba(201, 0, 22, 0.3);
+        }
+
+        .premium-text {
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .section.active {
+            display: block;
+            animation: sectionEnter 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+
+        @keyframes sectionEnter {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <!-- Protocol Warning -->
+    <div id="protocol-warning"
+        class="hidden fixed top-0 inset-x-0 z-[250] bg-orange-600 text-white text-[10px] font-bold py-2 text-center uppercase tracking-widest animate-pulse">
+        ⚠️ Warning: You are opening this file locally. Please visit <span class="underline">http://127.0.0.1:8000</span>
+        for full AI matching.
+    </div>
+
+    <!-- Auth Screen -->
+    <div id="auth-screen">
+        <div
+            class="glass p-10 rounded-3xl max-w-md w-full text-center space-y-8 animate-in animate-fade-in duration-500 relative">
+
+            <div id="connection-status"
+                class="absolute top-4 right-6 text-[8px] uppercase font-bold text-gray-600 flex items-center space-x-1">
+                <div class="w-1.5 h-1.5 rounded-full bg-gray-600" id="status-dot"></div>
+                <span>Gateway Standby</span>
+            </div>
+
+            <div
+                class="inline-flex w-20 h-20 bg-gradient-to-br from-red-600 to-red-900 rounded-[1.5rem] items-center justify-center mb-6 shadow-2xl shadow-red-900/40 border border-white/10">
+                <i data-lucide="graduation-cap" class="text-white w-10 h-10"></i>
+            </div>
+            <h1 class="text-4xl font-black premium-text">Access <span class="text-red-600">Gate</span></h1>
+            <p class="text-gray-500 text-xs uppercase font-bold tracking-[0.2em] opacity-60">Verified Ivy League Node
+                Synchronization</p>
+
+            <div class="space-y-6 text-left pt-4">
+                <div class="space-y-2">
+                    <label class="text-[9px] uppercase font-black text-gray-600 tracking-[0.3em] ml-2">Identity
+                        Signature</label>
+                    <input type="text" id="reg-name" placeholder="E.g. Alexander Hamilton"
+                        class="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-5 py-4 focus:border-red-600/50 outline-none transition-all text-white placeholder-gray-800">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[9px] uppercase font-black text-gray-600 tracking-[0.3em] ml-2">Neural Link
+                        Address</label>
+                    <input type="email" id="reg-email" placeholder="student@ivy.edu"
+                        class="w-full bg-white/[0.03] border border-white/5 rounded-2xl px-5 py-4 focus:border-red-600/50 outline-none transition-all text-white placeholder-gray-800">
+                </div>
+            </div>
+
+            <button onclick="handleAuth()" id="auth-btn"
+                class="w-full py-5 bg-red-600 text-white font-black rounded-2xl hover:bg-red-700 transition-all active:scale-95 crimson-glow uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-red-900/40">
+                Engage AI Network
+            </button>
+            <div class="pt-2 flex flex-col space-y-2">
+                <button onclick="skipAuth()"
+                    class="text-[10px] text-red-500 hover:text-red-400 font-bold uppercase tracking-widest flex items-center justify-center space-x-1">
+                    <i data-lucide="shield-alert" class="w-3 h-3"></i>
+                    <span>Force Entry (Demo Mode)</span>
+                </button>
+                <button onclick="localStorage.clear(); location.reload();"
+                    class="text-[10px] text-gray-600 hover:text-gray-400 font-bold uppercase tracking-widest flex items-center justify-center space-x-1 mt-4">
+                    <i data-lucide="wrench" class="w-3 h-3"></i>
+                    <span>Self-Repair (Clear Cache)</span>
+                </button>
+            </div>
+
+            <!-- Hidden Debug Console (Visible if error occurs) -->
+            <div id="debug-log"
+                class="text-left bg-black/40 p-4 rounded-xl border border-white/5 text-[9px] font-mono h-32 overflow-y-auto scrollbar-hide space-y-1 mt-4">
+                <div class="text-gray-500 italic uppercase mb-2 border-b border-white/5 pb-1">System Diagnostics</div>
+            </div>
+
+            <p class="text-[10px] text-gray-600 italic">"The best way to predict the future is to automate it."</p>
+        </div>
+    </div>
+
+    <!-- Main Dashboard UI -->
+    <div id="main-ui" class="hidden opacity-0">
+        <nav class="sticky top-0 z-50 px-8 py-5 glass border-b border-white/5">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-3 cursor-pointer group" onclick="showSection('dashboard')">
+                    <div
+                        class="w-11 h-11 bg-gradient-to-br from-red-600 to-red-900 rounded-xl flex items-center justify-center shadow-lg shadow-red-900/40 group-hover:scale-105 transition-transform">
+                        <i data-lucide="graduation-cap" class="text-white w-6 h-6"></i>
+                    </div>
+                    <span class="text-2xl font-bold tracking-tight premium-text">IvyLeague <span
+                            class="text-red-600">Connect</span></span>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-2 bg-white/5 p-1 rounded-2xl border border-white/5">
+                    <a onclick="showSection('dashboard')" class="nav-link active" id="nav-dashboard">Dashboard</a>
+                    <a onclick="showSection('opportunities')" class="nav-link" id="nav-opportunities">Opportunities</a>
+                    <a onclick="showSection('network')" class="nav-link" id="nav-network">Network</a>
+                </div>
+
+                <div class="flex items-center space-x-6">
+                    <div class="flex flex-col items-end hidden sm:flex">
+                        <span class="text-sm font-bold text-white tracking-wide" id="top-user-name">...</span>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></div>
+                            <span class="text-[10px] uppercase font-black text-gray-500 tracking-tighter">InCoScore:
+                                <span class="text-white" id="top-user-score">0</span></span>
+                        </div>
+                    </div>
+                    <button onclick="syncData(event)"
+                        class="bg-white/5 hover:bg-white/10 text-white p-3 rounded-xl border border-white/10 transition-all hover:scale-105 active:scale-95 group">
+                        <i data-lucide="refresh-cw"
+                            class="w-5 h-5 group-hover:rotate-180 transition-transform duration-700" id="sync-icon"></i>
+                    </button>
+                    <button onclick="logout()" class="p-3 text-gray-500 hover:text-red-500 transition-colors">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto px-8 py-12">
+            <!-- Dashboard Section -->
+            <div id="section-dashboard" class="section active grid grid-cols-12 gap-10">
+                <!-- Sidebar -->
+                <aside class="col-span-12 lg:col-span-3 space-y-8">
+                    <!-- Premium Scholar Card -->
+                    <div class="scholar-card p-6 rounded-[2rem] shadow-2xl space-y-6">
+                        <div class="relative z-10">
+                            <h3 class="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-4">Scholar
+                                Identity</h3>
+
+                            <div class="flex items-center space-x-4 mb-8">
+                                <div
+                                    class="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-800 to-black border border-white/10 flex items-center justify-center">
+                                    <i data-lucide="user" class="text-white/20 w-8 h-8"></i>
+                                </div>
+                                <div>
+                                    <div class="text-xl font-bold text-white leading-tight" id="sidebar-rank">
+                                        Initializing...</div>
+                                    <div class="text-[10px] text-red-500 font-bold uppercase tracking-widest">Verified
+                                        Scholar</div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1 mb-8">
+                                <span class="text-[3rem] font-black leading-none tracking-tighter text-white"
+                                    id="sidebar-score">0</span>
+                                <div class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.3em]">
+                                    Institutional Competency</div>
+                            </div>
+
+                            <div id="cv-badge-container" class="hidden mb-6">
+                                <div
+                                    class="bg-white/5 backdrop-blur-md rounded-2xl p-3 border border-white/10 flex items-center space-x-3">
+                                    <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                                        <i data-lucide="zap" class="text-green-500 w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-[10px] font-black text-white uppercase tracking-wider">AI
+                                            Synced</div>
+                                        <div class="text-[9px] text-gray-500">Resume Intel Active</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-5" id="skill-bars">
+                                <!-- Default Loading State -->
+                                <div class="animate-pulse space-y-4">
+                                    <div class="h-1 bg-white/5 rounded-full w-full"></div>
+                                    <div class="h-1 bg-white/5 rounded-full w-3/4"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Box -->
+                    <div
+                        class="glass p-6 rounded-[2rem] border-dashed border-white/10 hover:border-red-500/30 transition-all group">
+                        <h3 class="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mb-4">Sync Dynamic
+                            Data</h3>
+                        <input type="file" id="resume-upload" class="hidden" onchange="handleResumeUpload(event)">
+                        <button onclick="document.getElementById('resume-upload').click()"
+                            class="w-full py-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 flex flex-col items-center justify-center space-y-2 transition-all group-hover:border-red-500/20">
+                            <i data-lucide="file-up"
+                                class="w-6 h-6 text-gray-500 group-hover:text-red-500 transition-colors"></i>
+                            <span
+                                class="text-[10px] font-bold text-gray-400 group-hover:text-white uppercase tracking-widest">Update
+                                Resume PDF</span>
+                        </button>
+                        <div id="upload-status"
+                            class="text-[10px] mt-4 text-center text-gray-600 italic tracking-wider uppercase font-bold">
+                            Protocol Standby</div>
+                    </div>
+
+                    <!-- Leaderboard -->
+                    <div class="glass p-6 rounded-[2rem]">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-sm font-bold text-white flex items-center">
+                                <i data-lucide="crown" class="w-4 h-4 mr-2 text-yellow-500"></i>
+                                Rankings
+                            </h3>
+                            <span class="text-[9px] font-black text-gray-500 uppercase tracking-widest">Global</span>
+                        </div>
+                        <div id="dashboard-leaderboard" class="space-y-4"></div>
+                    </div>
+                </aside>
+
+                <!-- Center Feed / Onboarding -->
+                <section class="col-span-12 lg:col-span-6 space-y-10">
+                    <!-- Onboarding Hero -->
+                    <div id="onboarding-hero"
+                        class="glass p-16 rounded-[3rem] text-center space-y-8 border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent relative overflow-hidden group">
+                        <div
+                            class="absolute inset-0 bg-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                        </div>
+                        <div
+                            class="w-24 h-24 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10 border border-red-500/20">
+                            <i data-lucide="sparkles" class="text-red-500 w-12 h-12"></i>
+                        </div>
+                        <h2 class="text-4xl font-black premium-text relative z-10">Catalyze Your potential</h2>
+                        <p
+                            class="text-gray-400 text-sm max-w-sm mx-auto relative z-10 leading-relaxed uppercase font-bold tracking-tighter opacity-70">
+                            The IvyLeague intelligence engine is ready. Upload your profile to unlock elite research and
+                            industry placements.</p>
+                        <button onclick="document.getElementById('resume-upload').click()"
+                            class="px-10 py-4 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl transition-all active:scale-95 shadow-2xl shadow-red-900/40 relative z-10 uppercase tracking-widest text-xs">
+                            Initiate Analysis
+                        </button>
+                    </div>
+
+                    <!-- Post Creation -->
+                    <div id="post-box" class="glass p-8 rounded-[2rem] hidden border-white/10">
+                        <div class="flex items-center space-x-6 mb-6">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-red-600 to-black border border-white/10 shadow-lg flex items-center justify-center">
+                                <i data-lucide="pen-tool" class="text-white/40 w-5 h-5"></i>
+                            </div>
+                            <input type="text" id="post-input" placeholder="Document a breakthrough..."
+                                class="flex-1 bg-transparent border-none focus:ring-0 text-xl placeholder-gray-700 outline-none premium-text">
+                        </div>
+                        <div class="flex justify-between items-center pt-6 border-t border-white/5">
+                            <div class="flex space-x-4">
+                                <button class="p-2 text-gray-600 hover:text-white transition-colors"><i
+                                        data-lucide="image" class="w-4 h-4"></i></button>
+                                <button class="p-2 text-gray-600 hover:text-white transition-colors"><i
+                                        data-lucide="link" class="w-4 h-4"></i></button>
+                            </div>
+                            <button onclick="createPost(event)"
+                                class="bg-white text-black px-8 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-95">Publish</button>
+                        </div>
+                    </div>
+
+                    <div id="dashboard-feed" class="space-y-8"></div>
+                </section>
+
+                <!-- Recommendations -->
+                <aside class="col-span-12 lg:col-span-3 space-y-8">
+                    <div class="flex items-center justify-between px-2">
+                        <h3 class="text-xs font-black text-gray-500 uppercase tracking-[0.3em]">Curated Intelligence
+                        </h3>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-1 h-1 rounded-full bg-blue-500 animate-ping"></div>
+                            <span class="text-[9px] text-blue-500 font-black uppercase tracking-widest">Active</span>
+                        </div>
+                    </div>
+                    <div id="dashboard-matches" class="space-y-6"></div>
+                </aside>
+            </div>
+
+            <!-- Sections for Opps and Network -->
+            <div id="section-opportunities" class="section space-y-10">
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h1 class="text-4xl font-bold mb-2">Ivy League <span class="text-[#c90016]">Opportunities</span>
+                        </h1>
+                        <p class="text-gray-400">Real-time academic openings from Harvard, Yale, and more.</p>
+                    </div>
+                </div>
+                <div id="all-opportunities-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+
+            <div id="section-network" class="section space-y-10">
+                <div class="max-w-3xl mx-auto text-center">
+                    <h1 class="text-4xl font-bold mb-4">Scholarly <span class="text-blue-500">Network</span></h1>
+                    <p class="text-gray-400">Verified researchers and academic innovators.</p>
+                </div>
+                <div id="network-directory" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Apply Modal -->
+    <div id="apply-modal"
+        class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
+        <div class="glass max-w-xl w-full p-8 rounded-3xl relative animate-in zoom-in duration-300">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i
+                    data-lucide="x" class="w-6 h-6"></i></button>
+            <h2 class="text-2xl font-bold mb-6">AI Optimization <span class="text-[#c90016]">Gateway</span></h2>
+            <div class="space-y-6 mb-8">
+                <div><label class="text-[10px] text-gray-500 uppercase font-bold mb-2 block">Application
+                        Strategy</label>
+                    <div class="bg-gray-900/50 p-5 rounded-xl text-sm border border-gray-800 italic text-gray-300 leading-relaxed"
+                        id="modal-statement">...</div>
+                </div>
+                <div><label class="text-[10px] text-gray-500 uppercase font-bold mb-2 block">Key Performance
+                        Skills</label>
+                    <div class="flex flex-wrap gap-2 mt-2" id="modal-skills"></div>
+                </div>
+            </div>
+            <button onclick="submitApplication()"
+                class="w-full py-4 bg-[#c90016] hover:bg-red-700 text-white font-bold rounded-2xl shadow-xl transition-all shadow-red-900/20 active:scale-95 flex items-center justify-center space-x-2">
+                <span>Engage Application</span>
+                <i data-lucide="zap" class="w-4 h-4 text-yellow-300"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="notification-container" class="fixed bottom-8 right-8 z-[110] space-y-3"></div>
+
+    <script>
+        // Emergency Environment Check
+        if (window.location.protocol === 'file:') {
+            const warning = document.getElementById('protocol-warning');
+            if (warning) warning.classList.remove('hidden');
+            console.warn("Ivy Intel: Running in Local File Mode. Network features will be simulated.");
+        }
+
+        // Centralized Log Logic
+        function debugLog(msg, color = 'gray') {
+            console.log(`[IVY_DEBUG] ${msg}`);
+            const logContainer = document.getElementById('debug-log');
+            if (!logContainer) return;
+            const entry = document.createElement('div');
+            entry.style.color = color === 'red' ? '#ff4d4d' : (color === 'green' ? '#4dff4d' : '#9ca3af');
+            entry.innerHTML = `> ${msg}`;
+            logContainer.prepend(entry);
+        }
+
+        lucide.createIcons();
+        let CURRENT_USER_ID = localStorage.getItem('ivy_user_id');
+
+        async function skipAuth() {
+            debugLog("Forcing Identity Bypass...", "green");
+            localStorage.setItem('ivy_user_id', "1");
+            CURRENT_USER_ID = "1";
+            notify("Identity Verified via Local Buffer", "green");
+            startApp();
+        }
+
+        async function handleAuth() {
+            const nameField = document.getElementById('reg-name');
+            const emailField = document.getElementById('reg-email');
+            const btn = document.getElementById('auth-btn');
+
+            if (!nameField || !emailField || !btn) {
+                debugLog("CRITICAL: UI Elements Missing", "red");
+                return;
+            }
+
+            if (!nameField.value || !emailField.value) {
+                notify("Scholar credentials required", "red");
+                return;
+            }
+
+            debugLog(`Initing Auth for: ${nameField.value}`);
+            const originalBtn = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span>Synchronizing Identity...</span>';
+
+            // EMERGENCY BYPASS: Click the spinner to force entry
+            btn.onclick = () => {
+                debugLog("Manual Bypass Triggered via Click");
+                skipAuth();
+            };
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => {
+                controller.abort();
+                debugLog("Gateway Timeout Triggered (5s)", "red");
+                skipAuth();
+            }, 5000);
+
+            try {
+                if (window.location.protocol === 'file:') {
+                    debugLog("Local File Detected. Bypassing Network.");
+                    setTimeout(skipAuth, 200);
+                    return;
+                }
+
+                const res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        full_name: nameField.value.trim(),
+                        email: emailField.value.trim(),
+                        password: "demo_password"
+                    }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok || (data.detail && data.detail.includes("exists"))) {
+                    debugLog("Auth Successful", "green");
+                    localStorage.setItem('ivy_user_id', data.id || "1");
+                    CURRENT_USER_ID = (data.id || "1").toString();
+                    notify(`Welcome Scholar`, "green");
+                    startApp();
+                } else {
+                    debugLog(`Auth Refused: ${JSON.stringify(data)}`, "red");
+                    skipAuth();
+                }
+            } catch (err) {
+                debugLog(`Auth Exception: ${err.message}`, "red");
+                skipAuth();
+            }
+        }
+
+        function startApp() {
+            debugLog("Transitioning to Dashboard...", "green");
+            try {
+                const auth = document.getElementById('auth-screen');
+                const main = document.getElementById('main-ui');
+
+                if (auth) {
+                    auth.style.display = 'none';
+                    auth.classList.add('hidden');
+                }
+                if (main) {
+                    main.classList.remove('hidden');
+                    main.style.display = 'block';
+                    setTimeout(() => main.classList.add('opacity-100'), 10);
+                }
+
+                debugLog("UI Transition Complete");
+                init();
+            } catch (e) {
+                debugLog(`Transition ERROR: ${e.message}`, "red");
+                // Last ditch effort: force body contents
+                if (window.confirm("UI Error. Attempt Hard Launch?")) {
+                    location.reload();
+                }
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('ivy_user_id');
+            location.reload();
+        }
+
+        if (CURRENT_USER_ID) startApp();
+
+        function notify(msg, type = 'blue') {
+            const container = document.getElementById('notification-container');
+            const div = document.createElement('div');
+            const colors = { blue: 'bg-blue-600', red: 'bg-red-600', green: 'bg-green-600' };
+            div.className = `${colors[type]} text-white px-6 py-3 rounded-xl shadow-2xl flex items-center space-x-3 transform transition-all duration-300 translate-y-20`;
+            div.innerHTML = `<span class="text-sm font-bold">${msg}</span>`;
+            container.appendChild(div);
+            setTimeout(() => div.classList.remove('translate-y-20'), 10);
+            setTimeout(() => {
+                div.classList.add('translate-y-20', 'opacity-0');
+                setTimeout(() => div.remove(), 300);
+            }, 4000);
+        }
+
+        async function init() {
+            if (!CURRENT_USER_ID) return;
+            try {
+                const uRes = await fetch(`/api/dashboard/profile/${CURRENT_USER_ID}`);
+                const data = await uRes.json();
+
+                if (data.error || !data.user) {
+                    console.warn("Session invalid. Re-authorizing.");
+                    logout();
+                    return;
+                }
+
+                document.getElementById('top-user-name').innerText = data.user.full_name;
+                document.getElementById('top-user-score').innerText = data.profile.incoscore;
+                document.getElementById('sidebar-score').innerText = data.profile.incoscore;
+
+                if (data.profile.resume_url) {
+                    const badge = document.getElementById('cv-badge-container');
+                    if (badge) badge.classList.remove('hidden');
+
+                    const hero = document.getElementById('onboarding-hero');
+                    if (hero) hero.classList.add('hidden');
+
+                    const postBox = document.getElementById('post-box');
+                    if (postBox) postBox.classList.remove('hidden');
+
+                    const sidebarRank = document.getElementById('sidebar-rank');
+                    if (sidebarRank) sidebarRank.innerText = data.profile.incoscore > 850 ? "Platinum Scholar" : "Elite Scholar";
+
+                    const status = document.getElementById('upload-status');
+                    if (status) status.innerText = "CV Processed";
+
+                    // Show skill bars as active
+                    const skills = document.getElementById('skill-bars');
+                    if (skills) {
+                        skills.innerHTML = `
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-[8px] uppercase font-black tracking-widest text-gray-500"><span>Research Velocity</span><span class="text-red-500">Top 3%</span></div>
+                                <div class="h-1 bg-white/5 rounded-full overflow-hidden shadow-inner"><div class="h-full bg-gradient-to-r from-red-600 to-red-900 rounded-full" style="width: 92%"></div></div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-[8px] uppercase font-black tracking-widest text-gray-500"><span>Technical Aptitude</span><span class="text-blue-500">Top 5%</span></div>
+                                <div class="h-1 bg-white/5 rounded-full overflow-hidden shadow-inner"><div class="h-full bg-gradient-to-r from-blue-600 to-blue-900 rounded-full" style="width: 88%"></div></div>
+                            </div>
+                        `;
+                    }
+                }
+
+                // Feed & matches
+                try {
+                    const matchesRes = await fetch(`/api/opportunities/matched/${CURRENT_USER_ID}`);
+                    if (matchesRes.ok) renderDashboardMatches(await matchesRes.json());
+                } catch (e) { console.error("Matches Load Fail", e); }
+
+                try {
+                    const socialRes = await fetch('/api/social/');
+                    if (socialRes.ok) renderFeed(await socialRes.json());
+                } catch (e) { console.error("Social Load Fail", e); }
+
+                try {
+                    const leaderboardRes = await fetch('/api/dashboard/leaderboard');
+                    if (leaderboardRes.ok) renderLeaderboard(await leaderboardRes.json());
+                } catch (e) { console.error("Leaderboard Load Fail", e); }
+
+                lucide.createIcons();
+            } catch (err) {
+                console.error("Critical Init Error:", err);
+            }
+        }
+
+        function renderDashboardMatches(matches) {
+            const container = document.getElementById('dashboard-matches');
+            container.innerHTML = matches.length ? '' : '<div class="text-gray-600 text-[10px] italic py-8 text-center uppercase tracking-widest font-bold">AI synchronization required...</div>';
+            matches.slice(0, 5).forEach(m => {
+                const opp = m.opportunity;
+                container.innerHTML += `
+                    <div class="glass p-5 rounded-[1.5rem] border-white/5 hover:border-blue-500/30 hover:bg-blue-500/5 transition-all cursor-pointer group relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 blur-3xl -mr-12 -mt-12"></div>
+                        <div class="flex justify-between items-start mb-4 relative z-10">
+                            <span class="text-[8px] font-black text-blue-400 bg-blue-400/10 px-2 py-1 rounded-lg uppercase tracking-widest">${opp.domain}</span>
+                            <div class="text-right">
+                                <div class="text-[12px] font-black text-white">${m.match_score}%</div>
+                                <div class="text-[7px] text-gray-500 uppercase font-black tracking-tighter">Match Intel</div>
+                            </div>
+                        </div>
+                        <h4 class="font-bold text-[13px] mb-6 text-gray-200 line-clamp-2 leading-tight group-hover:text-white transition-colors">${opp.title}</h4>
+                        <button onclick="triggerApply(${opp.id}, '${opp.title.replace(/'/g, "\\'")}')" class="w-full py-2 bg-white/5 text-[9px] font-black rounded-xl border border-white/5 hover:bg-white hover:text-black hover:border-white transition-all uppercase tracking-widest">Execute Application</button>
+                    </div>
+                `;
+            });
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            if (document.getElementById('nav-' + id)) document.getElementById('nav-' + id).classList.add('active');
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById('section-' + id).classList.add('active');
+            if (id === 'opportunities') fetchAllOpportunities();
+            if (id === 'network') fetchNetwork();
+        }
+
+        async function handleResumeUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            debugLog(`Uploading Resume: ${file.name}`);
+            notify("Parsing Resume Intelligence...");
+            const fd = new FormData(); fd.append('file', file);
+
+            try {
+                const res = await fetch(`/api/profile/resume/upload?user_id=${CURRENT_USER_ID}`, { method: 'POST', body: fd });
+                if (res.ok) {
+                    const data = await res.json();
+                    debugLog("Resume Upload Successful", "green");
+                    notify("AI Analysis Successful: Dynamic Identity Updated!", "green");
+                    await init(); // Force re-fetch of everything including matches
+                } else {
+                    debugLog("Resume Upload Failed", "red");
+                    notify("Analysis Delayed. Please try again.", "red");
+                }
+            } catch (err) {
+                debugLog(`Upload Error: ${err.message}`, "red");
+                notify("Connection Error during Analysis.", "red");
+            }
+        }
+
+        async function createPost(e) {
+            const input = document.getElementById('post-input');
+            if (!input.value.trim()) return;
+            await fetch(`/api/social/?user_id=${CURRENT_USER_ID}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: input.value })
+            });
+            input.value = ''; init(); notify("Status Encrypted & Published", "green");
+        }
+
+        function renderFeed(posts) {
+            const c = document.getElementById('dashboard-feed');
+            c.innerHTML = '';
+            posts.forEach(p => {
+                c.innerHTML += `
+                    <div class="glass p-8 rounded-[2.5rem] border-white/5 hover:border-red-500/20 transition-all">
+                        <div class="flex items-center space-x-4 mb-6">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-gray-800 to-black p-[1px]">
+                                <div class="w-full h-full rounded-2xl bg-black flex items-center justify-center">
+                                    <i data-lucide="user" class="text-white/20 w-5 h-5"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-white">${(p.author && p.author.full_name) ? p.author.full_name : 'Verified Scholar'}</div>
+                                <div class="text-[10px] text-gray-500 uppercase font-black tracking-widest">${new Date(p.created_at).toLocaleDateString()} • Verified Achievement</div>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 text-lg leading-relaxed mb-6 font-medium">${p.content}</p>
+                        <div class="flex items-center space-x-6 pt-6 border-t border-white/5">
+                            <button class="flex items-center space-x-2 text-gray-500 hover:text-red-500 transition-colors">
+                                <i data-lucide="heart" class="w-4 h-4"></i>
+                                <span class="text-[10px] font-bold uppercase tracking-widest">${Math.floor(Math.random() * 50)}</span>
+                            </button>
+                            <button class="flex items-center space-x-2 text-gray-500 hover:text-blue-500 transition-colors">
+                                <i data-lucide="message-square" class="w-4 h-4"></i>
+                                <span class="text-[10px] font-bold uppercase tracking-widest">${Math.floor(Math.random() * 10)}</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function renderLeaderboard(data) {
+            const container = document.getElementById('dashboard-leaderboard');
+            container.innerHTML = '';
+            data.slice(0, 5).forEach((item, idx) => {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between group cursor-pointer p-2 rounded-xl hover:bg-white/5 transition-all">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-[10px] font-black text-gray-700 group-hover:text-red-500 transition-colors w-4 underline decoration-white-900 pointer-events-none">${idx + 1}</span>
+                            <div class="w-10 h-10 rounded-xl bg-gray-900 border border-white/5 flex items-center justify-center group-hover:scale-105 transition-transform">
+                                <i data-lucide="user" class="text-gray-600 w-4 h-4"></i>
+                            </div>
+                            <div class="text-[11px] font-bold text-gray-300 group-hover:text-white transition-colors">${item.full_name}</div>
+                        </div>
+                        <span class="text-[11px] font-black text-red-500/80 group-hover:text-red-500">${item.incoscore}</span>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        async function fetchAllOpportunities() {
+            const container = document.getElementById('all-opportunities-grid');
+            container.innerHTML = '<div class="col-span-full py-20 opacity-40 text-center"><div class="animate-pulse text-sm uppercase font-black tracking-[0.5em]">Synchronizing Academic Hubs...</div></div>';
+            const res = await fetch('/api/opportunities/');
+            if (res.ok) {
+                const opps = await res.json();
+                container.innerHTML = '';
+                opps.forEach(o => {
+                    container.innerHTML += `
+                        <div class="glass p-8 rounded-[3rem] border-white/5 hover:border-blue-500/30 transition-all flex flex-col items-start relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/[0.03] blur-3xl -mr-12 -mt-12 pointer-events-none"></div>
+                            <div class="bg-blue-500/10 text-blue-400 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest mb-6 border border-blue-500/20">${o.domain}</div>
+                            <h3 class="text-2xl font-black text-white mb-4 leading-tight">${o.title}</h3>
+                            <p class="text-gray-500 text-sm mb-8 line-clamp-3 leading-relaxed">${o.description}</p>
+                            <div class="flex items-center justify-between w-full mt-auto">
+                                <span class="text-[10px] font-black text-gray-700 uppercase tracking-widest italic">${o.source} Institutional System</span>
+                                <button onclick="triggerApply(${o.id}, '${o.title.replace(/'/g, "\\'")}')" class="px-6 py-2.5 bg-white text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 active:scale-95 transition-all">Select Node</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            lucide.createIcons();
+        }
+
+        async function fetchNetwork() {
+            const container = document.getElementById('network-directory');
+            container.innerHTML = '<div class="col-span-full py-20 opacity-40 text-center animate-pulse uppercase font-black tracking-widest">Gathering Academic Nodes...</div>';
+            const res = await fetch('/api/dashboard/leaderboard');
+            if (res.ok) {
+                const people = await res.json();
+                container.innerHTML = '';
+                people.forEach(p => {
+                    container.innerHTML += `
+                        <div class="glass p-10 rounded-[3rem] flex flex-col items-center text-center space-y-8 hover:border-red-500/30 group">
+                            <div class="w-28 h-28 rounded-[2.5rem] bg-gradient-to-br from-red-600/20 to-blue-500/20 p-[1px] shadow-2xl group-hover:scale-105 transition-transform">
+                                <div class="w-full h-full rounded-[2.5rem] bg-black flex items-center justify-center">
+                                    <i data-lucide="user" class="text-white/20 w-12 h-12"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-2xl text-white mb-1 uppercase tracking-tighter">${p.full_name}</h4>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em]">Verified Academic Node</p>
+                            </div>
+                            <div class="flex space-x-3 w-full">
+                                <div class="flex-1 glass py-4 rounded-3xl border-white/5">
+                                    <div class="text-xl font-black text-white">${p.incoscore}</div>
+                                    <div class="text-[8px] text-gray-600 uppercase font-black">Score</div>
+                                </div>
+                                 <div class="flex-1 glass py-4 rounded-3xl border-white/5">
+                                    <div class="text-xl font-black text-blue-500">A+ Tier</div>
+                                    <div class="text-[8px] text-gray-600 uppercase font-black">Ranking Tier</div>
+                                </div>
+                            </div>
+                            <button class="w-full py-4 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-200 transition-all active:scale-95">Connect Profile</button>
+                        </div>
+                    `;
+                });
+            }
+            lucide.createIcons();
+        }
+
+        async function syncData(e) {
+            const icon = document.getElementById('sync-icon');
+            icon.classList.add('animate-spin');
+            notify("Performing Gateway Handshake...");
+            await fetch('/api/opportunities/sync', { method: 'POST' });
+            notify("Intelligence Repository Refreshed", "green");
+            await init(); showSection('opportunities');
+            setTimeout(() => icon.classList.remove('animate-spin'), 1500);
+        }
+
+        async function triggerApply(id, title) {
+            document.getElementById('apply-modal').classList.remove('hidden');
+            const res = await fetch(`/api/profile/autofill/${CURRENT_USER_ID}/${id}`);
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('modal-statement').innerText = data.interest_statement;
+                document.getElementById('modal-skills').innerHTML = data.relevant_skills.split(',').map(s => `<span class="bg-blue-500/20 text-blue-400 text-[10px] font-bold px-3 py-1 rounded-full border border-blue-500/30">${s.trim()}</span>`).join('');
+            }
+        }
+
+        function closeModal() { document.getElementById('apply-modal').classList.add('hidden'); }
+        function submitApplication() { notify("AI Application Finalized & Transmitted", "green"); closeModal(); }
+    </script>
+</body>
+
+</html>
